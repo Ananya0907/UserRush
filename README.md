@@ -128,11 +128,12 @@ src/constants/config.js
 Update:
 
 ```js
-export const GAME_ID = "your_team_game_id";
+export const GAME_ID = "your_game_id";
 ```
 
 ⚠️ This is VERY IMPORTANT  
-👉 This identifies your team in leaderboard  
+👉 The GAME_ID should be your Roll number   
+👉 This identifies you in leaderboard
 
 ---
 
