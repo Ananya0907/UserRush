@@ -4,21 +4,68 @@ import confetti from 'canvas-confetti';
 const GameContext = createContext();
 
 export function GameProvider({ children }) {
-  const [points, setPoints] = useState(() => parseInt(localStorage.getItem('points')) || 1000);
+  // --- New Core V2 State ---
+  const [playerIdentity, setPlayerIdentity] = useState(() => localStorage.getItem('playerIdentity') || null);
+  const [partner, setPartner] = useState(() => JSON.parse(localStorage.getItem('partner')) || null);
+  
+  // Resources & Progress
+  const [points, setPoints] = useState(() => parseInt(localStorage.getItem('points')) || 0); // Start at 0 to encourage arcade checking
+  const [relationship, setRelationship] = useState(() => parseInt(localStorage.getItem('relationship')) || 10);
+  const [unlockedLocations, setUnlockedLocations] = useState(() => JSON.parse(localStorage.getItem('unlockedLocations')) || ['coffee']);
+  
+  // Streaks & Arcade Memory
   const [arcadeStreak, setArcadeStreak] = useState(0);
   const [highScores, setHighScores] = useState(() => JSON.parse(localStorage.getItem('highScores')) || {});
   
-  // App navigation state: 'map', 'arcade', 'date', 'minigame'
+  // App navigation state: 'map', 'arcade', 'date', 'minigame', 'selection'
   const [currentView, setCurrentView] = useState('map');
   const [activeMiniGame, setActiveMiniGame] = useState(null);
+  const [activeLocation, setActiveLocation] = useState(null); // stores location id when on date
   
-  // Toast notification state
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
+    localStorage.setItem('playerIdentity', playerIdentity || '');
+    localStorage.setItem('partner', JSON.stringify(partner));
     localStorage.setItem('points', points);
+    localStorage.setItem('relationship', relationship);
+    localStorage.setItem('unlockedLocations', JSON.stringify(unlockedLocations));
     localStorage.setItem('highScores', JSON.stringify(highScores));
-  }, [points, highScores]);
+  }, [playerIdentity, partner, points, relationship, unlockedLocations, highScores]);
+
+  useEffect(() => {
+    // Force selection view if no partner chosen
+    if (!partner && currentView !== 'selection') {
+      setCurrentView('selection');
+    }
+  }, [partner]);
+
+  const updateRelationship = (amount) => {
+    setRelationship(prev => {
+      const newLevel = Math.min(100, Math.max(0, prev + amount));
+      return newLevel;
+    });
+
+    setToast({
+      message: amount > 0 ? `+${amount} Love! 💖` : `${amount} Love 💔`,
+      streakMsg: null,
+      id: Date.now()
+    });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const unlockLocation = (locId, cost) => {
+    if (points >= cost && !unlockedLocations.includes(locId)) {
+      setPoints(p => p - cost);
+      setUnlockedLocations(prev => [...prev, locId]);
+      
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      setToast({ message: `Location Unlocked! 🗺️`, id: Date.now() });
+      setTimeout(() => setToast(null), 3000);
+      return true;
+    }
+    return false;
+  };
 
   const addPoints = (baseAmount, isArcadeWin = false) => {
     let multiplier = 1;
@@ -27,82 +74,64 @@ export function GameProvider({ children }) {
     if (isArcadeWin) {
       newStreak += 1;
       setArcadeStreak(newStreak);
-      multiplier = 1 + (newStreak * 0.2); // 20% bonus per streak
+      multiplier = 1.2 + (newStreak * 0.3); // higher streak scaling
     }
 
-    const totalEarned = Math.round(baseAmount * multiplier);
-    setPoints(prev => prev + totalEarned);
+    // Multiply base amounts universally for faster early game + good arcade payouts
+    const totalPoints = Math.floor(baseAmount * multiplier * 2.5);
+    setPoints(prev => prev + totalPoints);
 
-    // Show popup
-    setToast({
-      message: `+${totalEarned} Points!`,
-      streakMsg: isArcadeWin && newStreak > 1 ? `(Streak 🔥x${newStreak})` : null,
-      id: Date.now()
-    });
-
-    if (isArcadeWin) {
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: ['#4ade80', '#fbbf24', '#3b82f6'] // Green, Gold, Blue
+    if (isArcadeWin && totalPoints > 0) {
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.8 } });
+      setToast({
+        message: `✨ +${totalPoints} Points!`,
+        streakMsg: newStreak > 1 ? `(Streak 🔥x${newStreak} + Perfect Bonus!)` : null,
+        id: Date.now()
       });
+      setTimeout(() => setToast(null), 4000);
     }
-
-    setTimeout(() => setToast(null), 3000);
   };
+
+  const resetStreak = () => setArcadeStreak(0);
 
   const updateHighScore = (gameId, score) => {
     setHighScores(prev => {
-      const currentHigh = prev[gameId] || 0;
-      if (score > currentHigh) {
+      if (!prev[gameId] || score > prev[gameId]) {
         return { ...prev, [gameId]: score };
       }
       return prev;
     });
   };
 
-  const resetStreak = () => setArcadeStreak(0);
-
   return (
     <GameContext.Provider value={{
+      playerIdentity, setPlayerIdentity,
+      partner, setPartner,
       points, setPoints, addPoints,
+      relationship, updateRelationship,
+      unlockedLocations, unlockLocation,
       arcadeStreak, resetStreak,
       highScores, updateHighScore,
       currentView, setCurrentView,
       activeMiniGame, setActiveMiniGame,
+      activeLocation, setActiveLocation,
       toast
     }}>
       {children}
-      
-      {/* Toast Overlay */}
       {toast && (
         <div style={{
-          position: 'fixed',
-          top: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.2)',
-          padding: '12px 24px',
-          borderRadius: '999px',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '18px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-          zIndex: 9999,
-          animation: 'slideDown 0.3s ease-out'
+          position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', color: '#ec4899', fontWeight: 'bold',
+          padding: '16px 32px', borderRadius: '40px', zIndex: 1000, boxShadow: '0 10px 40px rgba(236,72,153,0.3)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+          animation: 'float-up 0.4s ease-out', border: '2px solid rgba(255,182,193,0.5)'
         }}>
-          ✨ {toast.message} 
-          {toast.streakMsg && <span style={{ color: '#fbbf24' }}>{toast.streakMsg}</span>}
+          <div>{toast.message}</div>
+          {toast.streakMsg && <div style={{ fontSize: '14px', color: '#f59e0b' }}>{toast.streakMsg}</div>}
         </div>
       )}
       <style>{`
-        @keyframes slideDown {
+        @keyframes float-up {
           from { top: -50px; opacity: 0; }
           to { top: 20px; opacity: 1; }
         }

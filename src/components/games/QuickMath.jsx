@@ -91,11 +91,11 @@ export default function QuickMath({ onExit }) {
   return (
     <div style={{ textAlign: 'center', width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-        <div style={{ fontSize: '20px', color: '#fbbf24' }}>Score: {score}</div>
-        <div style={{ fontSize: '20px', color: timeLeft <= 5 ? '#f87171' : 'white' }}>0:{timeLeft.toString().padStart(2, '0')}</div>
+        <div style={{ fontSize: '20px', color: '#ec4899', fontWeight: 'bold' }}>Score: {score}</div>
+        <div style={{ fontSize: '20px', color: timeLeft <= 5 ? '#ef4444' : '#a78bfa', fontWeight: 'bold' }}>0:{timeLeft.toString().padStart(2, '0')}</div>
       </div>
       
-      <div style={{ fontSize: '48px', fontWeight: '800', marginBottom: '30px', letterSpacing: '4px' }}>
+      <div style={{ fontSize: '48px', fontWeight: '900', marginBottom: '30px', letterSpacing: '4px', color: '#be185d' }}>
         {equation.text} = ?
       </div>
       
@@ -107,8 +107,8 @@ export default function QuickMath({ onExit }) {
           onChange={e => setInputVal(e.target.value)}
           style={{
             fontSize: '32px', textAlign: 'center', width: '150px',
-            padding: '10px', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.2)',
-            background: 'rgba(0,0,0,0.3)', color: 'white'
+            padding: '10px', borderRadius: '16px', border: '3px solid rgba(236,72,153,0.3)',
+            background: 'rgba(255,255,255,0.7)', color: '#ec4899', fontWeight: 'bold', outline: 'none'
           }}
         />
         <button type="submit" style={{ display: 'none' }}>Submit</button>

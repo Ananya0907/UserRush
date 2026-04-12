@@ -3,8 +3,93 @@ html, body, #root {
   padding: 0;
   width: 100%;
   height: 100%;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #4b5563;
+  overflow: hidden;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Mature Aesthetics & Micro-Interactions */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.08);
+}
+
+.btn-aesthetic {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(236,72,153,0.15);
+}
+.btn-aesthetic:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(236,72,153,0.3);
+}
+.btn-aesthetic:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.8);
+  color: #be185d;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  z-index: 100;
+}
+
+/* Map Animations */
+@keyframes float-up {
+  0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-20vh) scale(1.2); opacity: 0; }
+}
+
+@keyframes float-cloud {
+  0% { transform: translateX(-10vw); opacity: 0; }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.7; }
+  100% { transform: translateX(110vw); opacity: 0; }
+}
+
+@keyframes gentle-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.4);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.6);
 }

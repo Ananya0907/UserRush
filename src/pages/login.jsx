@@ -108,62 +108,69 @@ export default function Login() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "radial-gradient(circle at top left, #1a1a2e, #0f0c29, #24243e)",
-        fontFamily: "Arial, sans-serif",
+        background: "linear-gradient(135deg, #ffe1e8 0%, #f3e8ff 50%, #e0e7ff 100%)",
+        fontFamily: "'Inter', sans-serif",
         boxSizing: "border-box",
-        padding: "20px"
+        padding: "20px",
+        position: "relative",
+        overflow: "hidden"
       }}
     >
+      {/* Floating Hearts Animation */}
+      {Array.from({ length: 15 }).map((_, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          left: `${Math.random() * 100}vw`,
+          bottom: '-50px',
+          fontSize: `${Math.random() * 20 + 10}px`,
+          animation: `float-up ${Math.random() * 10 + 5}s linear infinite`,
+          animationDelay: `${Math.random() * 5}s`,
+          opacity: 0.5,
+          pointerEvents: 'none'
+        }}>
+          {['💖', '✨', '🌸'][Math.floor(Math.random() * 3)]}
+        </div>
+      ))}
+
       <div
         style={{
           width: "min(92vw, 440px)",
-          padding: "clamp(24px, 5vw, 40px)",
-          borderRadius: "24px",
-          background: "rgba(255,255,255,0.06)",
-          backdropFilter: "blur(16px)",
-          border: "1px solid rgba(255,255,255,0.10)",
-          boxShadow: "0 24px 70px rgba(0,0,0,0.45)",
+          padding: "clamp(30px, 6vw, 40px)",
+          borderRadius: "32px",
+          background: "rgba(255, 255, 255, 0.7)",
+          backdropFilter: "blur(20px)",
+          border: "1px solid rgba(255, 255, 255, 0.9)",
+          boxShadow: "0 20px 40px rgba(255, 182, 193, 0.3)",
           textAlign: "center",
-          color: "white",
-          boxSizing: "border-box"
+          color: "#4a4a4a",
+          boxSizing: "border-box",
+          zIndex: 10
         }}
       >
-        {/* <div
-          style={{
-            display: "inline-block",
-            padding: "8px 14px",
-            borderRadius: "999px",
-            background: "rgba(59,130,246,0.16)",
-            color: "#bfdbfe",
-            fontSize: "clamp(12px, 2vw, 14px)",
-            fontWeight: "600",
-            marginBottom: "18px",
-            wordBreak: "break-word"
-          }}
-        >
-          {GAME_ID || "Not Set"} 
-        </div> */}
-
         <h1
           style={{
-            margin: "0 0 12px",
-            fontSize: "clamp(26px, 5vw, 34px)",
+            margin: "0 0 16px",
+            fontSize: "clamp(28px, 5vw, 36px)",
             fontWeight: "800",
-            letterSpacing: "-0.02em"
+            letterSpacing: "-0.02em",
+            background: "linear-gradient(90deg, #ec4899, #ec4899)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent"
           }}
         >
-          🎮 {GAME_ID || "Not Set"}
+          💖 Love Journey
         </h1>
 
         <p
           style={{
-            margin: "0 0 26px",
-            color: "#cbd5e1",
-            fontSize: "clamp(13px, 2vw, 15px)",
-            lineHeight: "1.6"
+            margin: "0 0 32px",
+            color: "#6b7280",
+            fontSize: "clamp(14px, 2vw, 16px)",
+            lineHeight: "1.6",
+            fontWeight: "500"
           }}
         >
-          Sign in using your institute email to continue
+          Begin your romantic adventure using your institute email.
         </p>
 
         <button
@@ -171,28 +178,32 @@ export default function Login() {
           disabled={loading}
           style={{
             width: "100%",
-            padding: "14px 16px",
+            padding: "16px",
             border: "none",
-            borderRadius: "14px",
-            background: loading ? "#475569" : "#2563eb",
+            borderRadius: "999px",
+            background: loading ? "#f472b6" : "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
             color: "white",
-            fontSize: "clamp(14px, 2vw, 16px)",
+            fontSize: "clamp(15px, 2vw, 17px)",
             fontWeight: "700",
             cursor: loading ? "not-allowed" : "pointer",
-            boxShadow: loading ? "none" : "0 10px 24px rgba(37,99,235,0.35)"
+            boxShadow: loading ? "none" : "0 10px 25px rgba(236, 72, 153, 0.4)",
+            transition: "transform 0.2s, box-shadow 0.2s"
           }}
+          onMouseEnter={e => !loading && (e.currentTarget.style.transform = 'translateY(-2px)')}
+          onMouseLeave={e => !loading && (e.currentTarget.style.transform = 'translateY(0)')}
         >
-          {loading ? "Please wait..." : "Login with Email"}
+          {loading ? "Preparing your dates..." : "Start Journey"}
         </button>
 
         {status && (
           <p
             style={{
-              marginTop: "18px",
+              marginTop: "24px",
               marginBottom: 0,
-              fontSize: "clamp(13px, 2vw, 14px)",
+              fontSize: "clamp(13px, 2vw, 15px)",
               lineHeight: "1.5",
-              color: status.toLowerCase().includes("success") ? "#4ade80" : "#e2e8f0",
+              color: status.toLowerCase().includes("success") ? "#10b981" : "#ef4444",
+              fontWeight: 600,
               wordBreak: "break-word"
             }}
           >
