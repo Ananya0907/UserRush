@@ -1,4 +1,31 @@
 import { useEffect } from "react";
+import { GameProvider, useGame } from "../context/GameContext";
+import ArcadeHub from "../components/ArcadeHub";
+import Map from "../components/Map";
+
+function GameContent() {
+  const { currentView } = useGame();
+
+  return (
+    <div
+      style={{
+        height: "100vh",
+        width: "100vw",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "linear-gradient(135deg, #020617 0%, #0f172a 45%, #111827 100%)",
+        fontFamily: "'Inter', Arial, sans-serif",
+        color: "white",
+        overflow: "hidden",
+        boxSizing: "border-box"
+      }}
+    >
+      {currentView === 'map' && <Map />}
+      {currentView === 'arcade' && <ArcadeHub />}
+    </div>
+  );
+}
 
 export default function Game() {
   useEffect(() => {
@@ -22,52 +49,8 @@ export default function Game() {
   }, []);
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(135deg, #020617 0%, #0f172a 45%, #111827 100%)",
-        fontFamily: "Arial, sans-serif",
-        color: "white",
-        overflow: "hidden",
-        boxSizing: "border-box"
-      }}
-    >
-      <div
-        style={{
-          width: "min(90vw, 500px)",
-          padding: "40px",
-          borderRadius: "24px",
-          background: "rgba(255,255,255,0.06)",
-          backdropFilter: "blur(16px)",
-          border: "1px solid rgba(255,255,255,0.10)",
-          boxShadow: "0 24px 70px rgba(0,0,0,0.45)",
-          textAlign: "center"
-        }}
-      >
-        <h1
-          style={{
-            margin: "0 0 14px",
-            fontSize: "36px",
-            fontWeight: "800"
-          }}
-        >
-          🎮 Game Page
-        </h1>
-
-        <p
-          style={{
-            margin: 0,
-            fontSize: "16px",
-            color: "#cbd5e1"
-          }}
-        >
-          Your game starts here
-        </p>
-      </div>
-    </div>
+    <GameProvider>
+      <GameContent />
+    </GameProvider>
   );
 }
