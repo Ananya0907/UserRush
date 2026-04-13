@@ -103,6 +103,15 @@ export function GameProvider({ children }) {
     });
   };
 
+  const resetGame = () => {
+    setPartner(null);
+    setPoints(0);
+    setRelationship(10);
+    setUnlockedLocations(['coffee']);
+    setArcadeStreak(0);
+    setCurrentView('selection');
+  };
+
   return (
     <GameContext.Provider value={{
       playerIdentity, setPlayerIdentity,
@@ -115,7 +124,7 @@ export function GameProvider({ children }) {
       currentView, setCurrentView,
       activeMiniGame, setActiveMiniGame,
       activeLocation, setActiveLocation,
-      toast
+      toast, resetGame
     }}>
       {children}
       {toast && (

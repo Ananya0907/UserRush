@@ -1,19 +1,19 @@
 import { useGame } from '../context/GameContext';
-import { Gamepad2, Map as MapIcon, Lock, Cloud } from 'lucide-react';
+import { Gamepad2, Map as MapIcon, Lock, Cloud, ArrowLeft } from 'lucide-react';
 
 const LOCATIONS = [
   { id: 'coffee', name: 'Coffee Shop ☕', cost: 0, desc: 'Warm cozy tones.', icon: '☕' },
   { id: 'park', name: 'Park Picnic 🌳', cost: 'unlock prev', desc: 'Fresh nature feel.', icon: '🌳' },
-  { id: 'movie', name: 'Movie Night 🎬', cost: 250, desc: 'Dim lighting.', icon: '🎬' },
-  { id: 'amusement', name: 'Amusement 🎡', cost: 600, desc: 'Colorful & lively.', icon: '🎡' },
-  { id: 'art', name: 'Art Studio 🎨', cost: 1100, desc: 'Creative & soft.', icon: '🎨' },
-  { id: 'beach', name: 'Beach Date 🌊', cost: 1800, desc: 'Sunset pastel.', icon: '🌊' },
-  { id: 'dinner', name: 'Fancy Dinner 🍽️', cost: 2800, desc: 'Elegant dining.', icon: '🍽️' },
-  { id: 'final', name: 'Final Date 💫', cost: 4500, desc: 'Emotional finale.', icon: '💫' }
+  { id: 'movie', name: 'Movie Night 🎬', cost: 500, desc: 'Dim lighting.', icon: '🎬' },
+  { id: 'amusement', name: 'Amusement 🎡', cost: 1200, desc: 'Colorful & lively.', icon: '🎡' },
+  { id: 'art', name: 'Art Studio 🎨', cost: 2500, desc: 'Creative & soft.', icon: '🎨' },
+  { id: 'beach', name: 'Beach Date 🌊', cost: 4000, desc: 'Sunset pastel.', icon: '🌊' },
+  { id: 'dinner', name: 'Fancy Dinner 🍽️', cost: 6500, desc: 'Elegant dining.', icon: '🍽️' },
+  { id: 'final', name: 'Final Date 💫', cost: 10000, desc: 'Emotional finale.', icon: '💫' }
 ];
 
 export default function Map() {
-  const { points, partner, setCurrentView, setActiveLocation, unlockedLocations, unlockLocation } = useGame();
+  const { points, partner, setCurrentView, setActiveLocation, unlockedLocations, unlockLocation, resetGame } = useGame();
 
   const handleLocationClick = (loc) => {
     if (unlockedLocations.includes(loc.id)) {
@@ -26,6 +26,12 @@ export default function Map() {
       } else {
         alert("This unlocks after you complete the previous date!");
       }
+    }
+  };
+
+  const handleChangePartner = () => {
+    if (window.confirm("Are you sure you want to change your partner? Your points and progress will revert to 0!")) {
+      resetGame();
     }
   };
 
@@ -43,9 +49,17 @@ export default function Map() {
         <Cloud size={120} color="white" fill="white" />
       </div>
 
+      <button onClick={handleChangePartner} className="btn-aesthetic" style={{
+        position: 'absolute', top: '20px', left: '20px', padding: '10px 16px', background: 'rgba(255,255,255,0.8)',
+        border: '1px solid rgba(0,0,0,0.1)', borderRadius: '999px', display: 'flex', alignItems: 'center', gap: '6px',
+        fontWeight: 'bold', color: '#be185d', cursor: 'pointer', zIndex: 30, backdropFilter: 'blur(10px)'
+      }}>
+        <ArrowLeft size={16} /> Change Partner
+      </button>
+
       {/* Header Overlay */}
       <div className="glass-panel" style={{ 
-        margin: '20px', padding: '20px 30px', borderRadius: '24px', 
+        margin: '60px 20px 20px 20px', padding: '20px 30px', borderRadius: '24px', 
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
