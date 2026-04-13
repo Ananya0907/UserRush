@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import { Heart, ArrowLeft, Send } from 'lucide-react';
 import { getScenario } from '../data/storylines';
@@ -15,57 +15,69 @@ export default function DateScreen() {
   const [dateOver, setDateOver] = useState(false);
   const [dateFailed, setDateFailed] = useState(false);
   const [typing, setTyping] = useState(false);
+  const scrollRef = useRef(null);
 
-  // Access current phase data securely
   const currentPhase = scenario.phases && scenario.phases[phaseIndex] ? scenario.phases[phaseIndex] : { steps: [], choices: [] };
 
   useEffect(() => {
-    if (currentStep < currentPhase.steps.length) {
+    let timer;
+    if (currentStep < currentPhase.steps.length && !showChoices && !typing && !dateFailed && !dateOver) {
       setTyping(true);
-      const step = currentPhase.steps[currentStep];
-      
-      const timer = setTimeout(() => {
-        setTyping(false);
+      // Wait for 'typing' before showing message
+      timer = setTimeout(() => {
+        const step = currentPhase.steps[currentStep];
         setChatLog(prev => [...prev, step]);
-        setTimeout(() => setCurrentStep(s => s + 1), 2000);
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    } else if (currentStep === currentPhase.steps.length && !dateOver && !dateFailed && currentPhase.choices.length > 0) {
-      setTimeout(() => setShowChoices(true), 1500);
+        setCurrentStep(s => s + 1);
+        setTyping(false);
+      }, 1500);
+    } else if (currentStep === currentPhase.steps.length && !dateOver && !dateFailed && currentPhase.choices && currentPhase.choices.length > 0 && !showChoices && !typing) {
+      timer = setTimeout(() => setShowChoices(true), 1000);
+    } else if (currentStep === currentPhase.steps.length && !dateOver && !dateFailed && (!currentPhase.choices || currentPhase.choices.length === 0) && !showChoices && !typing) {
+      // Handles completely finishing the scenario phases if no choices are left (safety fallback)
+      timer = setTimeout(() => setDateOver(true), 2000);
     }
-  }, [currentStep, dateOver, dateFailed, currentPhase]);
+    return () => clearTimeout(timer);
+  }, [currentStep, showChoices, typing, currentPhase, dateOver, dateFailed]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [chatLog, typing, showChoices]);
 
   const handleChoice = (choiceData) => {
     setShowChoices(false);
     setChatLog(prev => [...prev, { text: choiceData.text, type: 'chat', user: true }]);
-    setTyping(true);
     
+    // Simulate user sending message, then partner typing
     setTimeout(() => {
-      setTyping(false);
-      setChatLog(prev => [...prev, { text: choiceData.response, type: 'chat', character: true }]);
-      updateRelationship(choiceData.love);
-      
-      if (choiceData.love <= -30) {
-         setTimeout(() => setDateFailed(true), 3000);
-      } else {
-         if (phaseIndex < scenario.phases.length - 1) {
-            // Move to phase 2
-            setTimeout(() => {
-               setPhaseIndex(p => p + 1);
-               setCurrentStep(0);
-            }, 2500);
-         } else {
-            // Unlocking logic because visual novel date is over!
-            const locKeys = ['coffee', 'park', 'movie', 'amusement', 'art', 'beach', 'dinner', 'final'];
-            const currIdx = locKeys.indexOf(activeLocation);
-            if (currIdx >= 0 && currIdx < locKeys.length - 1) {
-               unlockLocation(locKeys[currIdx + 1], 0);
+        setTyping(true);
+        setTimeout(() => {
+            setTyping(false);
+            setChatLog(prev => [...prev, { text: choiceData.response, type: 'chat', character: true }]);
+            updateRelationship(choiceData.love);
+            
+            if (choiceData.love <= -30) {
+               setTimeout(() => setDateFailed(true), 3000);
+            } else {
+               if (phaseIndex < scenario.phases.length - 1) {
+                  // Move to next phase
+                  setTimeout(() => {
+                     setPhaseIndex(p => p + 1);
+                     setCurrentStep(0);
+                  }, 2500);
+               } else {
+                  // Ending Date logic
+                  const locKeys = ['coffee', 'park', 'movie', 'amusement', 'art', 'beach', 'dinner', 'final'];
+                  const currIdx = locKeys.indexOf(activeLocation);
+                  if (currIdx >= 0 && currIdx < locKeys.length - 1) {
+                     unlockLocation(locKeys[currIdx + 1], 0);
+                  }
+                  setTimeout(() => setDateOver(true), 3000);
+               }
             }
-            setTimeout(() => setDateOver(true), 3000);
-         }
-      }
-    }, 2000);
+        }, 2000);
+    }, 500);
   };
 
   const endDate = () => {
@@ -78,8 +90,34 @@ export default function DateScreen() {
        <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1f2937, #111827)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white', padding: '40px', textAlign: 'center' }}>
           <h1 style={{ fontSize: '48px', color: '#ef4444', marginBottom: '20px' }}>Date Failed 💔</h1>
           <p style={{ fontSize: '18px', color: '#d1d5db', marginBottom: '40px', maxWidth: '600px', lineHeight: '1.6' }}>Your response deeply disappointed {partner.name}. The atmosphere turned completely cold, and they decided to cut the night short and go home early. Your relationship has taken a massive hit.</p>
+          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', marginBottom: '40px', border: '1px solid rgba(255,255,255,0.1)' }}>
+             <h3 style={{ margin: '0 0 10px 0', color: '#ef4444' }}>Current Relationship</h3>
+             <div style={{ fontWeight: 'bold', fontSize: '32px' }}>{relationship}%</div>
+          </div>
           <button className="btn-aesthetic" onClick={endDate} style={{ padding: '16px 32px', background: '#ec4899', color: 'white', border: 'none', borderRadius: '999px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer' }}>
              Return to City
+          </button>
+       </div>
+     );
+  }
+
+  if (dateOver) {
+     return (
+       <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1f2937, #111827)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white', padding: '40px', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '48px', color: relationship >= 80 ? '#10b981' : '#f472b6', marginBottom: '10px' }}>
+             {relationship >= 80 ? 'Perfect Date ✨' : 'Date Completed 💖'}
+          </h1>
+          <p style={{ fontSize: '18px', color: '#d1d5db', marginBottom: '20px', maxWidth: '600px', lineHeight: '1.6' }}>
+             {relationship >= 80 ? `You and ${partner.name} had an absolutely magical time. Sparks were flying everywhere! It was unforgettable.` : `You had a really nice and pleasant time with ${partner.name}. The connection is growing stronger.`}
+          </p>
+          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.1)', borderRadius: '20px', marginBottom: '40px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.2)' }}>
+             <h3 style={{ margin: '0 0 10px 0', color: relationship >= 80 ? '#10b981' : '#f472b6' }}>Final Relationship Status</h3>
+             <div style={{ fontWeight: '800', fontSize: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                 {relationship}% <Heart fill={relationship >= 80 ? '#10b981' : '#f472b6'} color={relationship >= 80 ? '#10b981' : '#f472b6'} size={32} />
+             </div>
+          </div>
+          <button className="btn-aesthetic" onClick={endDate} style={{ padding: '18px 36px', background: 'linear-gradient(135deg, #ec4899, #f43f5e)', color: 'white', border: 'none', borderRadius: '999px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 8px 20px rgba(236,72,153,0.4)', transition: 'transform 0.2s' }}>
+             Continue Journey
           </button>
        </div>
      );
@@ -116,11 +154,11 @@ export default function DateScreen() {
         </div>
       </div>
 
-      <div style={{ flexGrow: 1, padding: '40px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div ref={scrollRef} style={{ flexGrow: 1, padding: '40px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '24px', scrollBehavior: 'smooth' }}>
         {chatLog.map((log, idx) => (
           <div key={idx} style={{
             alignSelf: log.user ? 'flex-end' : log.type === 'situation' || log.type === 'arrival' ? 'center' : 'flex-start',
-            maxWidth: log.type === 'chat' ? '70%' : '85%', animation: 'float-up 0.5s ease-out forwards'
+            maxWidth: log.type === 'chat' ? '70%' : '85%', animation: 'float-up 0.4s ease-out forwards'
           }}>
             {log.type === 'chat' ? (
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexDirection: log.user ? 'row-reverse' : 'row' }}>
@@ -153,7 +191,7 @@ export default function DateScreen() {
         {typing && (
           <div style={{
             alignSelf: 'flex-start', background: 'rgba(255,255,255,0.95)', padding: '16px 24px', borderRadius: '24px 24px 24px 4px',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.15)', display: 'flex', gap: '6px', animation: 'float-up 0.3s', marginLeft: '52px',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.15)', display: 'flex', gap: '6px', animation: 'float-up 0.3s forwards', marginLeft: '52px',
             border: '1px solid rgba(255,255,255,0.9)'
           }}>
             <div style={{ width: '8px', height: '8px', background: '#ec4899', borderRadius: '50%', animation: 'gentle-pulse 1s infinite' }} />
@@ -168,25 +206,17 @@ export default function DateScreen() {
         display: 'flex', flexDirection: 'column', gap: '16px', borderRadius: '32px 32px 0 0', zIndex: 10
       }}>
         {showChoices && currentPhase.choices ? (
-          <>
-            <div style={{ textAlign: 'center', color: '#1f2937', marginBottom: '8px', fontWeight: 'bold', fontSize: '18px', textShadow: '0 2px 10px rgba(255,255,255,0.8)' }}>Make a critical decision:</div>
+          <div style={{ animation: 'float-up 0.5s ease-out forwards' }}>
+            <div style={{ textAlign: 'center', color: '#1f2937', marginBottom: '12px', fontWeight: 'bold', fontSize: '18px', textShadow: '0 2px 10px rgba(255,255,255,0.8)' }}>Make a decision...</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {currentPhase.choices.map((choice, idx) => (
                   <button key={idx} className="btn-aesthetic" onClick={() => handleChoice(choice)} style={choiceBtnStyle}>{choice.text}</button>
                 ))}
             </div>
-          </>
-        ) : dateOver ? (
-          <button className="btn-aesthetic" onClick={endDate} style={{
-            padding: '20px', background: 'linear-gradient(135deg, #ec4899, #f43f5e)',
-            border: 'none', borderRadius: '999px', color: 'white', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer',
-            boxShadow: '0 8px 25px rgba(236,72,153,0.5)'
-          }}>
-            Successfully Finish Date ✨
-          </button>
+          </div>
         ) : (
           <div style={{ display: 'flex', gap: '16px', opacity: 0.8 }}>
-            <input type="text" disabled placeholder="Enjoying the moment together..." style={{
+            <input type="text" disabled placeholder={typing ? "Partner is typing..." : "Enjoying the moment together..."} style={{
               flexGrow: 1, padding: '18px 24px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.8)', background: 'rgba(255,255,255,0.9)', fontSize: '16px', fontWeight: '500', color: '#4b5563'
             }} />
             <button disabled style={{ padding: '18px', background: '#9ca3af', border: 'none', borderRadius: '50%', color: 'white' }}><Send size={24} /></button>
@@ -201,5 +231,5 @@ const choiceBtnStyle = {
   padding: '18px 24px', background: 'rgba(255,255,255,0.95)',
   border: '1px solid rgba(236,72,153,0.3)', borderRadius: '20px',
   color: '#be185d', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left',
-  boxShadow: '0 4px 15px rgba(0,0,0,0.1)', transition: 'all 0.2s'
+  boxShadow: '0 4px 15px rgba(0,0,0,0.1)', transition: 'all 0.2s, transform 0.1s'
 };

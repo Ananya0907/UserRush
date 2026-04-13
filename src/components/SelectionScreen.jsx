@@ -2,12 +2,20 @@ import { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import { Heart, UserPlus } from 'lucide-react';
 
-const PARTNERS = [
+const ALL_GIRLS = [
   { id: 'emma', name: 'Emma', desc: 'A shy but sweet bookworm.', personality: 'shy', img: '/assets/char_emma_1775666742492.png' },
+  { id: 'olivia', name: 'Olivia', desc: 'A deeply caring artist.', personality: 'caring', img: '/assets/char_olivia_1775666760021.png' },
+  { id: 'chloe', name: 'Chloe', desc: 'A playful fashionista.', personality: 'playful', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=80' },
+  { id: 'mia', name: 'Mia', desc: 'A mature and ambitious leader.', personality: 'mature', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80' },
+  { id: 'ava', name: 'Ava', desc: 'A bubbly and spontaneous soul.', personality: 'bubbly', img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&q=80' }
+];
+
+const ALL_BOYS = [
   { id: 'liam', name: 'Liam', desc: 'An athletic and bold surfer.', personality: 'bold', img: '/assets/char_liam_1775666687057.png' },
   { id: 'lucas', name: 'Lucas', desc: 'A funny and caring musician.', personality: 'funny', img: '/assets/char_lucas_1775666780724.png' },
   { id: 'noah', name: 'Noah', desc: 'A smart, quiet photographer.', personality: 'smart', img: '/assets/char_noah_1775666722976.png' },
-  { id: 'olivia', name: 'Olivia', desc: 'A deeply caring artist.', personality: 'caring', img: '/assets/char_olivia_1775666760021.png' }
+  { id: 'ethan', name: 'Ethan', desc: 'A mature, soft-spoken gentleman.', personality: 'mature', img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=80' },
+  { id: 'james', name: 'James', desc: 'A mysterious and charming rebel.', personality: 'rebel', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80' }
 ];
 
 export default function SelectionScreen() {
@@ -15,9 +23,23 @@ export default function SelectionScreen() {
   
   const [step, setStep] = useState(1);
   const [identityTemp, setIdentityTemp] = useState(null);
+  const [availablePartners, setAvailablePartners] = useState([]);
 
   const confirmIdentity = (gender) => {
     setIdentityTemp(gender);
+    
+    let combined = [];
+    if (gender === 'Boy') {
+      const shuffledBoys = [...ALL_BOYS].sort(() => 0.5 - Math.random()).slice(0, 1);
+      const shuffledGirls = [...ALL_GIRLS].sort(() => 0.5 - Math.random());
+      combined = [...shuffledGirls, ...shuffledBoys].sort(() => 0.5 - Math.random());
+    } else {
+      const shuffledGirls = [...ALL_GIRLS].sort(() => 0.5 - Math.random()).slice(0, 1);
+      const shuffledBoys = [...ALL_BOYS].sort(() => 0.5 - Math.random());
+      combined = [...shuffledBoys, ...shuffledGirls].sort(() => 0.5 - Math.random());
+    }
+    
+    setAvailablePartners(combined);
     setStep(2);
   };
 
@@ -58,7 +80,7 @@ export default function SelectionScreen() {
       <div style={{
         display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px', width: '100%', maxWidth: '1000px'
       }}>
-        {PARTNERS.map(p => (
+        {availablePartners.map(p => (
           <div key={p.id} onClick={() => confirmPartner(p)} style={{
             background: 'rgba(255,255,255,0.8)',
             backdropFilter: 'blur(10px)',
@@ -105,3 +127,4 @@ const cardStyle = {
   boxShadow: '0 10px 25px rgba(236,72,153,0.15)',
   color: '#be185d'
 };
+
