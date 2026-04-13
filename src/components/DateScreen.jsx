@@ -8,6 +8,7 @@ export default function DateScreen() {
   
   const scenario = getScenario(activeLocation, partner?.personality);
   
+  const [phaseIndex, setPhaseIndex] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [chatLog, setChatLog] = useState([]);
   const [showChoices, setShowChoices] = useState(false);
@@ -15,19 +16,13 @@ export default function DateScreen() {
   const [dateFailed, setDateFailed] = useState(false);
   const [typing, setTyping] = useState(false);
 
-  const getReaction = (loveAmount) => {
-    if (loveAmount >= 40) return "Wow... you really are amazing. I've never felt this way before. 🥰";
-    if (loveAmount > 10) return "Haha, I agree! You're honestly so sweet. 😊";
-    if (loveAmount > 0) return "Oh, that's nice! 😌";
-    if (loveAmount <= -30) return "Wow... that was incredibly rude. I think I'm going to head home early.";
-    if (loveAmount < 0) return "Oh... really? That's... slightly disappointing.";
-    return "Hmm.";
-  };
+  // Access current phase data securely
+  const currentPhase = scenario.phases && scenario.phases[phaseIndex] ? scenario.phases[phaseIndex] : { steps: [], choices: [] };
 
   useEffect(() => {
-    if (currentStep < scenario.steps.length) {
+    if (currentStep < currentPhase.steps.length) {
       setTyping(true);
-      const step = scenario.steps[currentStep];
+      const step = currentPhase.steps[currentStep];
       
       const timer = setTimeout(() => {
         setTyping(false);
@@ -36,30 +31,39 @@ export default function DateScreen() {
       }, 2000);
 
       return () => clearTimeout(timer);
-    } else if (currentStep === scenario.steps.length && !dateOver && !dateFailed) {
+    } else if (currentStep === currentPhase.steps.length && !dateOver && !dateFailed && currentPhase.choices.length > 0) {
       setTimeout(() => setShowChoices(true), 1500);
     }
-  }, [currentStep, dateOver, dateFailed, scenario.steps]);
+  }, [currentStep, dateOver, dateFailed, currentPhase]);
 
-  const handleChoice = (text, loveAmt) => {
+  const handleChoice = (choiceData) => {
     setShowChoices(false);
-    setChatLog(prev => [...prev, { text, type: 'chat', user: true }]);
+    setChatLog(prev => [...prev, { text: choiceData.text, type: 'chat', user: true }]);
     setTyping(true);
     
     setTimeout(() => {
       setTyping(false);
-      setChatLog(prev => [...prev, { text: getReaction(loveAmt), type: 'chat', character: true }]);
-      updateRelationship(loveAmt);
+      setChatLog(prev => [...prev, { text: choiceData.response, type: 'chat', character: true }]);
+      updateRelationship(choiceData.love);
       
-      if (loveAmt < 0) {
+      if (choiceData.love <= -30) {
          setTimeout(() => setDateFailed(true), 3000);
       } else {
-         const locKeys = ['coffee', 'park', 'movie', 'amusement', 'art', 'beach', 'dinner', 'final'];
-         const currIdx = locKeys.indexOf(activeLocation);
-         if (currIdx >= 0 && currIdx < locKeys.length - 1) {
-            unlockLocation(locKeys[currIdx + 1], 0);
+         if (phaseIndex < scenario.phases.length - 1) {
+            // Move to phase 2
+            setTimeout(() => {
+               setPhaseIndex(p => p + 1);
+               setCurrentStep(0);
+            }, 2500);
+         } else {
+            // Unlocking logic because visual novel date is over!
+            const locKeys = ['coffee', 'park', 'movie', 'amusement', 'art', 'beach', 'dinner', 'final'];
+            const currIdx = locKeys.indexOf(activeLocation);
+            if (currIdx >= 0 && currIdx < locKeys.length - 1) {
+               unlockLocation(locKeys[currIdx + 1], 0);
+            }
+            setTimeout(() => setDateOver(true), 3000);
          }
-         setTimeout(() => setDateOver(true), 3000);
       }
     }, 2000);
   };
@@ -163,12 +167,13 @@ export default function DateScreen() {
         padding: '30px', borderTop: '1px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(30px)',
         display: 'flex', flexDirection: 'column', gap: '16px', borderRadius: '32px 32px 0 0', zIndex: 10
       }}>
-        {showChoices ? (
+        {showChoices && currentPhase.choices ? (
           <>
             <div style={{ textAlign: 'center', color: '#1f2937', marginBottom: '8px', fontWeight: 'bold', fontSize: '18px', textShadow: '0 2px 10px rgba(255,255,255,0.8)' }}>Make a critical decision:</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <button className="btn-aesthetic" onClick={() => handleChoice(scenario.opt1, scenario.o1l)} style={choiceBtnStyle}>{scenario.opt1}</button>
-                <button className="btn-aesthetic" onClick={() => handleChoice(scenario.opt2, scenario.o2l)} style={choiceBtnStyle}>{scenario.opt2}</button>
+                {currentPhase.choices.map((choice, idx) => (
+                  <button key={idx} className="btn-aesthetic" onClick={() => handleChoice(choice)} style={choiceBtnStyle}>{choice.text}</button>
+                ))}
             </div>
           </>
         ) : dateOver ? (

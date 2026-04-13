@@ -12,88 +12,140 @@ export const getScenario = (locationId, personality) => {
 
   const bg = backgrounds[locationId] || backgrounds.coffee;
 
-  let steps = [];
-  let opt1 = "", opt2 = "", o1l = 0, o2l = 0;
+  // Phase 1 Builder
+  let steps1 = [];
+  let choices1 = [];
 
-  // Base narrative structures dynamically injected with personality tones
+  // Phase 2 Builder  
+  let steps2 = [];
+  let choices2 = [];
+
+  // -------------------------------------------------------------
+  // DYNAMIC CONTENT GENERATOR BY LOCATION & PERSONALITY
+  // -------------------------------------------------------------
+
   if (locationId === 'coffee') {
-    steps.push({ text: "You push open the heavy glass door of 'The Rusty Mug'. The warm smell of roasted coffee beans instantly comforts you.", type: 'arrival' });
-    
+    steps1.push({ text: "You push open the heavy glass door of 'The Rusty Mug'.", type: 'arrival' });
     if (personality === 'shy') {
-      steps.push({ text: "H-hi! I got us a quiet table in the corner so we wouldn't be bothered... I hope that's okay. ☕", type: 'chat', character: true });
-      steps.push({ text: "You both sit down. They nervously tap their coffee cup, but as you talk about favorite books, they light up completely.", type: 'situation' });
-      steps.push({ text: "I'm really glad you asked me here. I don't usually go out much, but with you... it's really nice.", type: 'chat', character: true });
+      steps1.push({ text: "H-hi! I secured us a quiet corner booth.", type: 'chat', character: true });
+      steps1.push({ text: "They look down nervously at their menu, unsure of what to say.", type: 'situation' });
+      choices1 = [
+        { text: "Ask them what they are reading lately.", love: 15, response: "Oh! Actually I'm reading this amazing fantasy novel..." },
+        { text: "Stare at them silently waiting for them to order.", love: -10, response: "U-um... The menu is quite large..." }
+      ];
+      steps2.push({ text: "The drinks arrive. They seem much more relaxed now.", type: 'situation' });
+      steps2.push({ text: "I'm really glad you're so patient with me. I appreciate that.", type: 'chat', character: true });
+      steps2.push({ text: "Suddenly, a loud crash happens as a waiter drops plates!", type: 'situation' });
+      choices2 = [
+        { text: "Gently hold their hand to comfort them.", love: 25, response: "Y-you're holding my hand... I like it. 🥺" },
+        { text: "Yell at the waiter for being annoying.", love: -30, response: "That was incredibly rude of you to shout..." }
+      ];
     } else if (personality === 'bold') {
-      steps.push({ text: "Hey there! I got you a triple-shot espresso. You're going to need the energy to keep up with me today! 😉", type: 'chat', character: true });
-      steps.push({ text: "You both sit down. They lean in over the table, making incredibly intense eye contact while you talk.", type: 'situation' });
-      steps.push({ text: "You know, you look even better today than you usually do. And that's saying something.", type: 'chat', character: true });
-    } else if (personality === 'funny') {
-      steps.push({ text: "Hey! I almost spilled both of our coffees walking over here. Total disaster averted. ☕😅", type: 'chat', character: true });
-      steps.push({ text: "You both sit down. The conversation shifts to hilariously embarrassing childhood stories, making you laugh out loud.", type: 'situation' });
-      steps.push({ text: "Okay, your story definitely beats mine. I am officially impressed by your clumsiness.", type: 'chat', character: true });
-    } else if (personality === 'smart') {
-      steps.push({ text: "Hello. I secured a table near the window. The ambient lighting here is optimal for reading. 📚", type: 'chat', character: true });
-      steps.push({ text: "You both sit down. They passionately explain a bizarre documentary they watched last night, deeply engaged.", type: 'situation' });
-      steps.push({ text: "It's rare to find someone who actually listens to my ramblings. I appreciate your intellect.", type: 'chat', character: true });
-    } else { // caring
-      steps.push({ text: "Hey! I ordered your favorite. I made sure they used the exact milk you like. 😊", type: 'chat', character: true });
-      steps.push({ text: "You both sit down. They ask you deep questions about how your week has been, genuinely listening to your venting.", type: 'situation' });
-      steps.push({ text: "Remember, whenever you're stressed, you can always talk to me. I'm here for you.", type: 'chat', character: true });
-    }
-
-    steps.push({ text: "Suddenly, the barista trips! A tiny splash of your cappuccino lands right on your partner's sleeve.", type: 'situation' });
-    opt1 = "Grab a napkin and gently dab it off, laughing it off together."; o1l = 30;
-    opt2 = "Sigh loudly and complain to the manager about the terrible service."; o2l = -30;
-  }
-  else if (locationId === 'park') {
-    steps.push({ text: "The park is beautifully lit by the afternoon sun. A slight breeze rustles the green oak trees above your picnic blanket.", type: 'arrival' });
-    if (personality === 'shy') {
-      steps.push({ text: "I-I baked some small pastries... I just hope they don't taste terrible. 🧺", type: 'chat', character: true });
-      steps.push({ text: "You eat the delicious pastries. They blush heavily when you compliment their baking skills.", type: 'situation' });
-      steps.push({ text: "Thank you... that really means a lot to me.", type: 'chat', character: true });
-    } else if (personality === 'bold') {
-      steps.push({ text: "Perfect day for a picnic, isn't it? Come sit closer, the blanket isn't that big. 😏", type: 'chat', character: true });
-      steps.push({ text: "They confidently lay their head down in your lap while looking up at the clouds.", type: 'situation' });
-      steps.push({ text: "Everything looks better from down here, especially my view of you.", type: 'chat', character: true });
-    } else if (personality === 'funny') {
-      steps.push({ text: "I brought sandwiches! And by brought sandwiches, I mean I bought them from a gas station on the way. 🥪", type: 'chat', character: true });
-      steps.push({ text: "You spend an hour playfully tossing grapes into each other's mouths, failing miserably 90% of the time.", type: 'situation' });
-      steps.push({ text: "Okay, I may be awful at playing catch, but I'm great at making you smile.", type: 'chat', character: true });
-    } else if (personality === 'smart') {
-      steps.push({ text: "I researched the weather patterns, there is a exactly 0% chance of rain today. Perfect. ⛅", type: 'chat', character: true });
-      steps.push({ text: "They excitedly point out different specific species of birds and plants in the park.", type: 'situation' });
-      steps.push({ text: "Nature's systems are fascinating, but honestly, human connection is the most complex puzzle of all.", type: 'chat', character: true });
+      steps1.push({ text: "Hey! Over here! I already ordered you an iced latte.", type: 'chat', character: true });
+      steps1.push({ text: "They lean confidently across the table, intensely locking eyes with you.", type: 'situation' });
+      choices1 = [
+        { text: "Lean in closer too, returning the eye contact.", love: 20, response: "I like that confidence. Don't look away. 😉" },
+        { text: "Look away uncomfortably and check your phone.", love: -15, response: "Oh, am I boring you already?" }
+      ];
+      steps2.push({ text: "An hour passes filled with heavy flirting and sharp banter.", type: 'situation' });
+      steps2.push({ text: "You know, you're the first person I've met who can actually keep up with me.", type: 'chat', character: true });
+      steps2.push({ text: "They reach over and playfully boop your nose.", type: 'situation' });
+      choices2 = [
+        { text: "Boop them back and wink.", love: 25, response: "Haha, you are officially amazing. 🔥" },
+        { text: "Flinch away aggressively.", love: -35, response: "Whoa, okay. My bad, I guess." }
+      ];
     } else {
-      steps.push({ text: "I packed extra blankets and sunscreen just in case you need them! 🌞", type: 'chat', character: true });
-      steps.push({ text: "They meticulously make sure you are comfortable and fed throughout the entire afternoon.", type: 'situation' });
-      steps.push({ text: "Seeing you relaxed and happy here is honestly enough to make my entire week amazing.", type: 'chat', character: true });
+      steps1.push({ text: "Hey! The roasted bean smell here is incredible, right?", type: 'chat', character: true });
+      steps1.push({ text: "The barista brings over your warm drinks and smiles.", type: 'situation' });
+      choices1 = [
+        { text: "Pay for both drinks smoothly.", love: 15, response: "Aww, you didn't have to do that! Thank you! 😊" },
+        { text: "Demand they pay for both.", love: -15, response: "Uh, sure... I can cover it, no worries." }
+      ];
+      steps2.push({ text: "You talk for hours. The sun begins to set outside the large cafe windows.", type: 'situation' });
+      steps2.push({ text: "I honestly lost track of time talking to you. This was perfect.", type: 'chat', character: true });
+      steps2.push({ text: "They pull out a tiny napkin doodle they drew of you.", type: 'situation' });
+      choices2 = [
+        { text: "Keep it forever in your wallet.", love: 30, response: "Haha, you're so dramatically sweet! 🎨" },
+        { text: "Wipe your mouth with it.", love: -40, response: "Wow. That actually hurts." }
+      ];
     }
-    steps.push({ text: "Unexpectedly, a muddy golden retriever bursts out of the bushes, sprints over, and steals your sandwich!", type: 'situation' });
-    opt1 = "Laugh uncontrollably and pet the muddy dog."; o1l = 35;
-    opt2 = "Yell at the dog and storm off in complete frustration."; o2l = -35;
+  } 
+  else if (locationId === 'movie') {
+    steps1.push({ text: "The theater is intimately dark. The glowing screen faintly illuminates the seats.", type: 'arrival' });
+    steps1.push({ text: "I hope you brought your glasses, we are in the very back row! 🍿", type: 'chat', character: true });
+    steps1.push({ text: "The movie starts playing. It's a terrifying horror film.", type: 'situation' });
+    choices1 = [
+      { text: "Put your arm around them so they feel safe.", love: 20, response: "I'm normally not scared, but... I don't mind this." },
+      { text: "Scream loudly as a joke during a quiet scene.", love: -20, response: "Shhh!! Everyone is staring at us!" }
+    ];
+    steps2.push({ text: "The movie reaches a quiet, emotional climax on screen.", type: 'situation' });
+    steps2.push({ text: "This part always makes me cry...", type: 'chat', character: true });
+    steps2.push({ text: "You both reach into the popcorn bucket at the exact same moment.", type: 'situation' });
+    choices2 = [
+      { text: "Lock fingers with them inside the bucket.", love: 30, response: "You're so distracting... in a good way. 🥰" },
+      { text: "Snatch the popcorn aggressively and eat it loudly.", love: -30, response: "Could you chew a little louder? Unbelievable." }
+    ];
+  }
+  else if (locationId === 'beach') {
+    steps1.push({ text: "The pastel sunset dips over the horizon. The waves crash beautifully.", type: 'arrival' });
+    steps1.push({ text: "Take your shoes off! The sand feels amazing. 🌊", type: 'chat', character: true });
+    steps1.push({ text: "You walk side by side. Suddenly they spot a gorgeous seashell.", type: 'situation' });
+    choices1 = [
+      { text: "Pick it up and put it in their hair.", love: 25, response: "You think I look like a mermaid? I love it." },
+      { text: "Crush it by stepping on it accidentally.", love: -15, response: "Oh no... that was a really pretty shell..." }
+    ];
+    steps2.push({ text: "The sky turns completely purple and stars begin to emerge.", type: 'situation' });
+    steps2.push({ text: "I could stay out here forever with you. It's so quiet.", type: 'chat', character: true });
+    steps2.push({ text: "A massive, unusually large wave rapidly approaches your feet!", type: 'situation' });
+    choices2 = [
+      { text: "Grab them tightly and pull them back to safety.", love: 35, response: "My hero! That was a close one! 💕" },
+      { text: "Sprint away in terror, leaving them to get drenched.", love: -40, response: "I am entirely soaked and freezing. Date's over." }
+    ];
+  }
+  else if (locationId === 'final') {
+    steps1.push({ text: "Midnight. You stand atop the city's highest observation deck.", type: 'arrival' });
+    steps1.push({ text: "Look at all those city lights... It's breathtaking. ✨", type: 'chat', character: true });
+    steps1.push({ text: "They step extremely close to you by the glass railing, looking out.", type: 'situation' });
+    choices1 = [
+      { text: "Look at them and say: 'The view right here is better.'", love: 40, response: "You always know exactly what to say to me. 🥺" },
+      { text: "Stare at your phone and ignore the view completely.", love: -30, response: "We didn't come all the way up here for you to check emails." }
+    ];
+    steps2.push({ text: "The wind is cold, but the atmosphere is immensely thick with romance.", type: 'situation' });
+    steps2.push({ text: "Before we go... I have something I need to ask you. Seriously.", type: 'chat', character: true });
+    steps2.push({ text: "They pull out a small velvet box and hold it gently.", type: 'situation' });
+    choices2 = [
+      { text: "Tear up, smile widely, and pull them into a passionate kiss.", love: 100, response: "I love you. Immeasurably. ✨💕" },
+      { text: "Say 'Is it a watch? I already have a watch.'", love: -100, response: "Are you serious right now? I'm leaving." }
+    ];
   }
   else {
-    // Generic fallback mapping for the other 6 dates applying dynamic personality
-    steps.push({ text: `You arrive at the location and take in the stunning view.`, type: 'arrival' });
-    
-    if (personality === 'shy') steps.push({ text: "Wow, it's a bit crowded. As long as I'm beside you, I feel safe though. 🥺", type: 'chat', character: true });
-    else if (personality === 'bold') steps.push({ text: "This place is amazing! Are you ready for an unforgettable night with me? 🔥", type: 'chat', character: true });
-    else if (personality === 'funny') steps.push({ text: "I totally meant to bring us here... oops, I mean, yes! I planned this! 😂", type: 'chat', character: true });
-    else if (personality === 'smart') steps.push({ text: "The architecture and ambiance here is surprisingly well constructed. Very nice. 🧐", type: 'chat', character: true });
-    else steps.push({ text: "I just hope you're having a good time. That's all I care about right now. 💕", type: 'chat', character: true });
-    
-    steps.push({ text: "You spend an incredible hour fully immersed in the date experience, sharing deep looks.", type: 'situation' });
-    
-    if (personality === 'shy') steps.push({ text: "I didn't think I'd be able to talk this easily with anyone...", type: 'chat', character: true });
-    else if (personality === 'bold') steps.push({ text: "I've been staring at your lips all evening, just so you know.", type: 'chat', character: true });
-    else if (personality === 'funny') steps.push({ text: "You're lucky I'm here to provide premium entertainment for free.", type: 'chat', character: true });
-    else if (personality === 'smart') steps.push({ text: "You challenge my perspective on things. That is highly attractive.", type: 'chat', character: true });
-    else steps.push({ text: "You always make me feel so incredibly seen and appreciated.", type: 'chat', character: true });
+    // Shared Deep Logic for Park, Amusement, Art, Dinner, generating unique dialogues
+    steps1.push({ text: "You arrive. The ambiance matches the beautiful weather outside perfectly.", type: 'arrival' });
+    if (personality === 'shy') steps1.push({ text: "I'm so glad we're doing this... I was practicing what to say all morning. 😅", type: 'chat', character: true });
+    else if (personality === 'bold') steps1.push({ text: "Hope you're ready to make some incredible memories tonight! 🔥", type: 'chat', character: true });
+    else if (personality === 'funny') steps1.push({ text: "I checked mapping routes, there is an 80% chance we get lost but who cares. 😂", type: 'chat', character: true });
+    else steps1.push({ text: "I sincerely hope you enjoy this. I put a lot of thought into it. 🌷", type: 'chat', character: true });
 
-    steps.push({ text: "As the date nears its peak, a sudden romantic tension heavily fills the air between you.", type: 'situation' });
-    opt1 = "Lean in closely, gaze into their eyes, and smile warmly."; o1l = 45;
-    opt2 = "Check your phone to see what time it is, looking bored."; o2l = -45;
+    steps1.push({ text: "You spend an hour sharing deep interests and laughing at terrible jokes.", type: 'situation' });
+    choices1 = [
+      { text: "Compliment their incredibly unique mind.", love: 20, response: "That's quite possibly the best compliment I've ever gotten." },
+      { text: "Give a very generic, bored response.", love: -15, response: "Well, that was incredibly underwhelming." }
+    ];
+
+    steps2.push({ text: "The core activity of the date comes to an end. It's getting late.", type: 'situation' });
+    steps2.push({ text: "Time really flies, doesn't it? I feel very connected to you right now.", type: 'chat', character: true });
+    steps2.push({ text: "They shyly try to brush their hand against yours.", type: 'situation' });
+    choices2 = [
+      { text: "Gently intertwine your fingers with theirs.", love: 30, response: "I've been wanting to do that all evening. 🥰" },
+      { text: "Pull your hand away quickly and stretch.", love: -35, response: "Oh... okay. Nevermind then." }
+    ];
   }
 
-  return { bg, steps, opt1, o1l, opt2, o2l };
+  return {
+    bg,
+    phases: [
+      { steps: steps1, choices: choices1 },
+      { steps: steps2, choices: choices2 }
+    ]
+  };
 };
