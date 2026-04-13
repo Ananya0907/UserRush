@@ -3,17 +3,17 @@ import { useGame } from '../context/GameContext';
 import { Heart, UserPlus } from 'lucide-react';
 
 const ALL_GIRLS = [
-  { id: 'emma', name: 'Emma', desc: 'A shy but sweet bookworm.', personality: 'shy', img: '/assets/char_emma_1775666742492.png' },
-  { id: 'olivia', name: 'Olivia', desc: 'A deeply caring artist.', personality: 'caring', img: '/assets/char_olivia_1775666760021.png' },
+  { id: 'emma', name: 'Emma', desc: 'A shy but sweet bookworm.', personality: 'shy', img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=500&q=80' },
+  { id: 'olivia', name: 'Olivia', desc: 'A deeply caring artist.', personality: 'caring', img: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=500&q=80' },
   { id: 'chloe', name: 'Chloe', desc: 'A playful fashionista.', personality: 'playful', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=80' },
   { id: 'mia', name: 'Mia', desc: 'A mature and ambitious leader.', personality: 'mature', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80' },
   { id: 'ava', name: 'Ava', desc: 'A bubbly and spontaneous soul.', personality: 'bubbly', img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&q=80' }
 ];
 
 const ALL_BOYS = [
-  { id: 'liam', name: 'Liam', desc: 'An athletic and bold surfer.', personality: 'bold', img: '/assets/char_liam_1775666687057.png' },
-  { id: 'lucas', name: 'Lucas', desc: 'A funny and caring musician.', personality: 'funny', img: '/assets/char_lucas_1775666780724.png' },
-  { id: 'noah', name: 'Noah', desc: 'A smart, quiet photographer.', personality: 'smart', img: '/assets/char_noah_1775666722976.png' },
+  { id: 'liam', name: 'Liam', desc: 'An athletic and bold surfer.', personality: 'bold', img: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=500&q=80' },
+  { id: 'lucas', name: 'Lucas', desc: 'A funny and caring musician.', personality: 'funny', img: 'https://images.unsplash.com/photo-1488161628813-04466f872507?auto=format&fit=crop&w=500&q=80' },
+  { id: 'noah', name: 'Noah', desc: 'A smart, quiet photographer.', personality: 'smart', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80' },
   { id: 'ethan', name: 'Ethan', desc: 'A mature, soft-spoken gentleman.', personality: 'mature', img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=80' },
   { id: 'james', name: 'James', desc: 'A mysterious and charming rebel.', personality: 'rebel', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80' }
 ];

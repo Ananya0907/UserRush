@@ -1,5 +1,5 @@
 import { useGame } from '../context/GameContext';
-import { Gamepad2, Brain, Fingerprint, Palette, XSquare, Grip, HelpCircle, Layers, ArrowLeft } from 'lucide-react';
+import { Gamepad2, Brain, Fingerprint, Palette, Grip, HelpCircle, Layers, ArrowLeft, PenTool, Puzzle } from 'lucide-react';
 import QuickMath from './games/QuickMath';
 import SimonSays from './games/SimonSays';
 import ColorReact from './games/ColorReact';
@@ -7,6 +7,8 @@ import SnakeGame from './games/SnakeGame';
 import TicTacToe from './games/TicTacToe';
 import MemoryCard from './games/MemoryCard';
 import Quiz from './games/Quiz';
+import ConnectDots from './games/ConnectDots';
+import PuzzleGame from './games/PuzzleGame';
 
 export default function ArcadeHub() {
   const { points, arcadeStreak, highScores, setCurrentView, activeMiniGame, setActiveMiniGame, addPoints, updateHighScore } = useGame();
@@ -18,7 +20,9 @@ export default function ArcadeHub() {
     { id: 'quickmath', name: 'Quick Math', icon: <Brain size={32} color="#3b82f6" />, desc: '30s arithmetic drill' },
     { id: 'simonsays', name: 'Simon Says', icon: <Palette size={32} color="#eab308" />, desc: 'Memory test' },
     { id: 'colorreact', name: 'Color React', icon: <Fingerprint size={32} color="#ef4444" />, desc: 'Reflex tester' },
-    { id: 'snake', name: 'Neon Snake', icon: <Gamepad2 size={32} color="#10b981" />, desc: 'Scaling speed' }
+    { id: 'snake', name: 'Neon Snake', icon: <Gamepad2 size={32} color="#10b981" />, desc: 'Scaling speed' },
+    { id: 'connectdots', name: 'Connect Dots', icon: <PenTool size={32} color="#ec4899" />, desc: 'Speed sequential tapping' },
+    { id: 'puzzle', name: 'Sliding Puzzle', icon: <Puzzle size={32} color="#3b82f6" />, desc: 'Order the numbers 1-8' }
   ];
 
   const renderActiveGame = () => {
@@ -31,6 +35,8 @@ export default function ArcadeHub() {
       case 'simonsays': return <SimonSays {...props} />;
       case 'colorreact': return <ColorReact {...props} />;
       case 'snake': return <SnakeGame {...props} />;
+      case 'connectdots': return <ConnectDots {...props} />;
+      case 'puzzle': return <PuzzleGame {...props} />;
       default: return null;
     }
   };
@@ -44,12 +50,12 @@ export default function ArcadeHub() {
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'clamp(20px, 4vw, 40px)', boxSizing: 'border-box', overflowY: 'auto' }}>
       
       {/* Global Back Button */}
-      <button className="back-btn btn-aesthetic" onClick={handleBack}>
-        <ArrowLeft size={18} /> {activeMiniGame ? 'Back to Arcade' : 'Back to Map'}
+      <button className="back-btn btn-aesthetic" onClick={handleBack} style={{ alignSelf: 'flex-start', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', zIndex: 10 }}>
+        <ArrowLeft size={18} /> {activeMiniGame ? 'Back to Arcade' : 'Back to City Map'}
       </button>
 
       {activeMiniGame ? (
-        <div className="glass-panel" style={{ width: '100%', maxWidth: '800px', padding: '40px', borderRadius: '32px', marginTop: '40px' }}>
+        <div className="glass-panel" style={{ width: '100%', maxWidth: '800px', padding: '40px', borderRadius: '32px', marginTop: '40px', animation: 'float-up 0.4s ease-out' }}>
              {renderActiveGame()}
         </div>
       ) : (
@@ -60,7 +66,7 @@ export default function ArcadeHub() {
               <h1 style={{ margin: '0 0 8px', fontSize: 'clamp(28px, 4vw, 36px)', color: '#be185d', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Gamepad2 size={36} color="#ec4899" /> Dream Arcade
               </h1>
-              <p style={{ margin: 0, color: '#6b7280', fontSize: '16px' }}>Earn wealth to unlock new date spots!</p>
+              <p style={{ margin: 0, color: '#6b7280', fontSize: '16px' }}>Play games to earn diamonds and unlock new date spots!</p>
             </div>
             
             <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>

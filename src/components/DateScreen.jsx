@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import { Heart, ArrowLeft, Send } from 'lucide-react';
 import { getScenario } from '../data/storylines';
+import confetti from 'canvas-confetti';
 
 export default function DateScreen() {
   const { activeLocation, partner, setCurrentView, setActiveLocation, relationship, updateRelationship, unlockLocation } = useGame();
@@ -17,39 +18,44 @@ export default function DateScreen() {
   const [typing, setTyping] = useState(false);
   const scrollRef = useRef(null);
 
+  const [dateEndingState, setDateEndingState] = useState(null);
+
   const currentPhase = scenario.phases && scenario.phases[phaseIndex] ? scenario.phases[phaseIndex] : { steps: [], choices: [] };
 
   useEffect(() => {
     let timer;
-    if (currentStep < currentPhase.steps.length && !showChoices && !typing && !dateFailed && !dateOver) {
+    if (dateFailed || dateOver || showChoices || dateEndingState) return;
+
+    if (currentStep < currentPhase.steps.length) {
       setTyping(true);
-      // Wait for 'typing' before showing message
       timer = setTimeout(() => {
+        setTyping(false);
         const step = currentPhase.steps[currentStep];
         setChatLog(prev => [...prev, step]);
         setCurrentStep(s => s + 1);
-        setTyping(false);
       }, 1500);
-    } else if (currentStep === currentPhase.steps.length && !dateOver && !dateFailed && currentPhase.choices && currentPhase.choices.length > 0 && !showChoices && !typing) {
-      timer = setTimeout(() => setShowChoices(true), 1000);
-    } else if (currentStep === currentPhase.steps.length && !dateOver && !dateFailed && (!currentPhase.choices || currentPhase.choices.length === 0) && !showChoices && !typing) {
-      // Handles completely finishing the scenario phases if no choices are left (safety fallback)
-      timer = setTimeout(() => setDateOver(true), 2000);
+    } else if (currentStep === currentPhase.steps.length) {
+      if (currentPhase.choices && currentPhase.choices.length > 0) {
+        timer = setTimeout(() => setShowChoices(true), 1000);
+      } else {
+        timer = setTimeout(() => setDateEndingState('success'), 2000);
+      }
     }
     return () => clearTimeout(timer);
-  }, [currentStep, showChoices, typing, currentPhase, dateOver, dateFailed]);
+  }, [currentStep, currentPhase, dateOver, dateFailed, showChoices, dateEndingState]);
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      setTimeout(() => {
+        if(scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }, 50);
     }
-  }, [chatLog, typing, showChoices]);
+  }, [chatLog, typing, showChoices, dateEndingState]);
 
   const handleChoice = (choiceData) => {
     setShowChoices(false);
     setChatLog(prev => [...prev, { text: choiceData.text, type: 'chat', user: true }]);
     
-    // Simulate user sending message, then partner typing
     setTimeout(() => {
         setTyping(true);
         setTimeout(() => {
@@ -58,26 +64,34 @@ export default function DateScreen() {
             updateRelationship(choiceData.love);
             
             if (choiceData.love <= -30) {
-               setTimeout(() => setDateFailed(true), 3000);
+               setTimeout(() => setDateEndingState('fail'), 2000);
             } else {
                if (phaseIndex < scenario.phases.length - 1) {
-                  // Move to next phase
                   setTimeout(() => {
                      setPhaseIndex(p => p + 1);
                      setCurrentStep(0);
                   }, 2500);
                } else {
-                  // Ending Date logic
                   const locKeys = ['coffee', 'park', 'movie', 'amusement', 'art', 'beach', 'dinner', 'final'];
                   const currIdx = locKeys.indexOf(activeLocation);
                   if (currIdx >= 0 && currIdx < locKeys.length - 1) {
                      unlockLocation(locKeys[currIdx + 1], 0);
                   }
-                  setTimeout(() => setDateOver(true), 3000);
+
+                  if (activeLocation === 'final' && (relationship + choiceData.love) >= 80) {
+                    confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+                  }
+                  
+                  setTimeout(() => setDateEndingState('success'), 2000);
                }
             }
         }, 2000);
     }, 500);
+  };
+
+  const finalizeDate = () => {
+     if (dateEndingState === 'fail') setDateFailed(true);
+     else setDateOver(true);
   };
 
   const endDate = () => {
@@ -89,7 +103,7 @@ export default function DateScreen() {
      return (
        <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1f2937, #111827)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white', padding: '40px', textAlign: 'center' }}>
           <h1 style={{ fontSize: '48px', color: '#ef4444', marginBottom: '20px' }}>Date Failed 💔</h1>
-          <p style={{ fontSize: '18px', color: '#d1d5db', marginBottom: '40px', maxWidth: '600px', lineHeight: '1.6' }}>Your response deeply disappointed {partner.name}. The atmosphere turned completely cold, and they decided to cut the night short and go home early. Your relationship has taken a massive hit.</p>
+          <p style={{ fontSize: '18px', color: '#d1d5db', marginBottom: '40px', maxWidth: '600px', lineHeight: '1.6' }}>Your choice deeply disappointed {partner.name}. The atmosphere turned completely cold, and they decided to cut the night short and go home early. Your relationship has taken a massive hit.</p>
           <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', marginBottom: '40px', border: '1px solid rgba(255,255,255,0.1)' }}>
              <h3 style={{ margin: '0 0 10px 0', color: '#ef4444' }}>Current Relationship</h3>
              <div style={{ fontWeight: 'bold', fontSize: '32px' }}>{relationship}%</div>
@@ -102,13 +116,14 @@ export default function DateScreen() {
   }
 
   if (dateOver) {
+     const isFinal = activeLocation === 'final';
      return (
-       <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1f2937, #111827)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white', padding: '40px', textAlign: 'center' }}>
+       <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1f2937, #111827)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white', padding: '40px', textAlign: 'center', zIndex: 100 }}>
           <h1 style={{ fontSize: '48px', color: relationship >= 80 ? '#10b981' : '#f472b6', marginBottom: '10px' }}>
-             {relationship >= 80 ? 'Perfect Date ✨' : 'Date Completed 💖'}
+             {isFinal && relationship >= 80 ? 'Successful Ending! 💖' : relationship >= 80 ? 'Perfect Date ✨' : 'Date Completed 💖'}
           </h1>
           <p style={{ fontSize: '18px', color: '#d1d5db', marginBottom: '20px', maxWidth: '600px', lineHeight: '1.6' }}>
-             {relationship >= 80 ? `You and ${partner.name} had an absolutely magical time. Sparks were flying everywhere! It was unforgettable.` : `You had a really nice and pleasant time with ${partner.name}. The connection is growing stronger.`}
+             {isFinal && relationship >= 80 ? `You and ${partner.name} had a magical time. You made it all the way. This is a true love story!` : relationship >= 80 ? `You and ${partner.name} had an absolutely magical time. Sparks were flying everywhere! It was unforgettable.` : `You had a really nice and pleasant time with ${partner.name}. The connection is growing stronger.`}
           </p>
           <div style={{ padding: '20px', background: 'rgba(255,255,255,0.1)', borderRadius: '20px', marginBottom: '40px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.2)' }}>
              <h3 style={{ margin: '0 0 10px 0', color: relationship >= 80 ? '#10b981' : '#f472b6' }}>Final Relationship Status</h3>
@@ -117,7 +132,7 @@ export default function DateScreen() {
              </div>
           </div>
           <button className="btn-aesthetic" onClick={endDate} style={{ padding: '18px 36px', background: 'linear-gradient(135deg, #ec4899, #f43f5e)', color: 'white', border: 'none', borderRadius: '999px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 8px 20px rgba(236,72,153,0.4)', transition: 'transform 0.2s' }}>
-             Continue Journey
+             {isFinal ? 'Back to Map' : 'Continue Journey'}
           </button>
        </div>
      );
@@ -213,6 +228,16 @@ export default function DateScreen() {
                   <button key={idx} className="btn-aesthetic" onClick={() => handleChoice(choice)} style={choiceBtnStyle}>{choice.text}</button>
                 ))}
             </div>
+          </div>
+        ) : dateEndingState ? (
+          <div style={{ animation: 'float-up 0.5s ease-out forwards', textAlign: 'center' }}>
+            <button className="btn-aesthetic" onClick={finalizeDate} style={{
+              background: 'linear-gradient(135deg, #ec4899, #f43f5e)', color: 'white', padding: '18px 36px', 
+              border: 'none', borderRadius: '999px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer',
+              boxShadow: '0 4px 15px rgba(236,72,153,0.3)', width: '100%', maxWidth: '400px'
+            }}>
+               End the Date & See Results
+            </button>
           </div>
         ) : (
           <div style={{ display: 'flex', gap: '16px', opacity: 0.8 }}>
