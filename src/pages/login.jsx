@@ -108,69 +108,50 @@ export default function Login() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "linear-gradient(135deg, #ffe1e8 0%, #f3e8ff 50%, #e0e7ff 100%)",
+        background: "#0c0d1b", // dark navy background exactly like screenshot
         fontFamily: "'Inter', sans-serif",
         boxSizing: "border-box",
         padding: "20px",
-        position: "relative",
         overflow: "hidden"
       }}
     >
-      {/* Floating Hearts Animation */}
-      {Array.from({ length: 15 }).map((_, i) => (
-        <div key={i} style={{
-          position: 'absolute',
-          left: `${Math.random() * 100}vw`,
-          bottom: '-50px',
-          fontSize: `${Math.random() * 20 + 10}px`,
-          animation: `float-up ${Math.random() * 10 + 5}s linear infinite`,
-          animationDelay: `${Math.random() * 5}s`,
-          opacity: 0.5,
-          pointerEvents: 'none'
-        }}>
-          {['💖', '✨', '🌸'][Math.floor(Math.random() * 3)]}
-        </div>
-      ))}
-
       <div
         style={{
-          width: "min(92vw, 440px)",
-          padding: "clamp(30px, 6vw, 40px)",
-          borderRadius: "32px",
-          background: "rgba(255, 255, 255, 0.7)",
+          width: "min(92vw, 400px)",
+          padding: "40px",
+          borderRadius: "24px",
+          background: "rgba(255, 255, 255, 0.05)",
           backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.9)",
-          boxShadow: "0 20px 40px rgba(255, 182, 193, 0.3)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
           textAlign: "center",
-          color: "#4a4a4a",
-          boxSizing: "border-box",
-          zIndex: 10
+          color: "white",
+          boxSizing: "border-box"
         }}
       >
         <h1
           style={{
             margin: "0 0 16px",
-            fontSize: "clamp(28px, 5vw, 36px)",
+            fontSize: "28px",
             fontWeight: "800",
-            letterSpacing: "-0.02em",
-            background: "linear-gradient(90deg, #ec4899, #ec4899)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent"
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px"
           }}
         >
-          💖 Love Journey
+          <span>🎮</span> LCI2025013
         </h1>
 
         <p
           style={{
-            margin: "0 0 32px",
-            color: "#6b7280",
-            fontSize: "clamp(14px, 2vw, 16px)",
-            lineHeight: "1.6",
-            fontWeight: "500"
+            margin: "0 0 24px",
+            color: "#e2e8f0",
+            fontSize: "14px",
+            fontWeight: "400"
           }}
         >
-          Begin your romantic adventure using your institute email.
+          Sign in using your institute email to continue
         </p>
 
         <button
@@ -178,30 +159,39 @@ export default function Login() {
           disabled={loading}
           style={{
             width: "100%",
-            padding: "16px",
+            padding: "14px",
             border: "none",
-            borderRadius: "999px",
-            background: loading ? "#f472b6" : "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
+            borderRadius: "12px",
+            background: loading ? "#3b82f6" : "#2563eb",
             color: "white",
-            fontSize: "clamp(15px, 2vw, 17px)",
-            fontWeight: "700",
+            fontSize: "16px",
+            fontWeight: "600",
             cursor: loading ? "not-allowed" : "pointer",
-            boxShadow: loading ? "none" : "0 10px 25px rgba(236, 72, 153, 0.4)",
-            transition: "transform 0.2s, box-shadow 0.2s"
+            transition: "all 0.2s"
           }}
-          onMouseEnter={e => !loading && (e.currentTarget.style.transform = 'translateY(-2px)')}
-          onMouseLeave={e => !loading && (e.currentTarget.style.transform = 'translateY(0)')}
+          onMouseEnter={e => !loading && (e.currentTarget.style.background = '#1d4ed8')}
+          onMouseLeave={e => !loading && (e.currentTarget.style.background = '#2563eb')}
         >
-          {loading ? "Preparing your dates..." : "Start Journey"}
+          {loading ? "Logging in..." : "Login with Email"}
         </button>
 
-        {status && (
+        <p
+          style={{
+            marginTop: "24px",
+            marginBottom: 0,
+            fontSize: "12px",
+            color: "#cbd5e1"
+          }}
+        >
+          Submit your domain authorised on leaderboard website
+        </p>
+
+        {status && !status.includes("Submit your domain") && !status.includes("Logging in") && (
           <p
             style={{
               marginTop: "24px",
               marginBottom: 0,
-              fontSize: "clamp(13px, 2vw, 15px)",
-              lineHeight: "1.5",
+              fontSize: "14px",
               color: status.toLowerCase().includes("success") ? "#10b981" : "#ef4444",
               fontWeight: 600,
               wordBreak: "break-word"
